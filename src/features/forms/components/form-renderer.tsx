@@ -25,6 +25,8 @@ import { FieldControl } from "./field-control";
 
 type Status = "idle" | "uploading" | "saving";
 
+const PHOTO_REVIEW_MESSAGE = "Revisa las fotografías adjuntas.";
+
 const STATUS_TEXT: Record<Exclude<Status, "idle">, string> = {
   uploading: "Subiendo fotografías… no cierres esta página.",
   saving: "Guardando el formulario…",
@@ -122,10 +124,7 @@ function FormBody({ form, station }: { form: FormDefinition; station: Station })
     );
     const problems = validatePhotoCounts(form, counts);
     setPhotoErrors(problems);
-    if (Object.keys(problems).length > 0) {
-      setFormError("Revisa las fotografías adjuntas.");
-      return;
-    }
+    if (Object.keys(problems).length > 0) return; // el aviso se muestra a partir de photoErrors
 
     // Un mismo id por formulario abierto: si hay que reintentar, el servidor no duplica el envío.
     submissionId.current ??= crypto.randomUUID();
@@ -178,7 +177,8 @@ function FormBody({ form, station }: { form: FormDefinition; station: Station })
         setFormError("Ocurrió un error inesperado. Inténtalo de nuevo.");
         return;
       }
-      setFormError(error.message);
+      // Los errores de fotos se muestran por campo y desaparecen cuando la persona los corrige.
+      if (error.code !== "invalid_photos") setFormError(error.message);
 
       if (error.code === "attachment_missing" || error.code === "attachment_invalid") {
         // Una foto no quedó bien en el servidor: se vuelven a subir todas en el próximo intento.
@@ -200,6 +200,20 @@ function FormBody({ form, station }: { form: FormDefinition; station: Station })
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     void handleSubmit(submitValues)(event);
   }
+
+  // Al agregar o quitar fotos se retira el error de ese campo: ya no describe lo que se ve.
+  function handlePhotosChange(key: string, update: (prev: PhotoItem[]) => PhotoItem[]) {
+    updatePhotos(key, update);
+    setPhotoErrors((prev) =>
+      key in prev
+        ? Object.fromEntries(Object.entries(prev).filter(([k]) => k !== key))
+        : prev,
+    );
+  }
+
+  // Aviso general: el mensaje puntual de un error de envío, o el resumen de errores de fotos.
+  const banner =
+    formError ?? (Object.keys(photoErrors).length > 0 ? PHOTO_REVIEW_MESSAGE : null);
 
   return (
     <Panel labelledBy="titulo-formulario">
@@ -228,7 +242,7 @@ function FormBody({ form, station }: { form: FormDefinition; station: Station })
                 key={field.key}
                 field={field}
                 photos={photos[field.key] ?? []}
-                onChange={(update) => updatePhotos(field.key, update)}
+                onChange={(update) => handlePhotosChange(field.key, update)}
                 error={photoErrors[field.key]}
                 disabled={busy}
               />
@@ -258,13 +272,13 @@ function FormBody({ form, station }: { form: FormDefinition; station: Station })
           />
         </fieldset>
 
-        {formError && (
+        {banner && (
           <p
             role="alert"
             className="bg-danger-50 text-danger-600 mt-6 flex items-start gap-2 rounded-xl px-3.5 py-3 font-semibold"
           >
             <InfoIcon size={18} className="mt-0.5 flex-none" />
-            <span>{formError}</span>
+            <span>{banner}</span>
           </p>
         )}
 

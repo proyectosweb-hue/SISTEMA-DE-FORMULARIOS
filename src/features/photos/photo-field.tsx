@@ -24,7 +24,7 @@ type Props = {
 };
 
 const ACTION_BASE =
-  "inline-flex min-h-12 flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl px-4 text-base font-semibold transition-colors focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-accent-500 sm:flex-none";
+  "inline-flex min-h-12 grow basis-52 cursor-pointer items-center justify-center gap-2 rounded-xl px-4 text-base font-semibold whitespace-nowrap transition-colors focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-accent-500 sm:grow-0 sm:basis-auto";
 
 export function revokePreviews(photos: PhotoItem[]) {
   for (const photo of photos) URL.revokeObjectURL(photo.previewUrl);
