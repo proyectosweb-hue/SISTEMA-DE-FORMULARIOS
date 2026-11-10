@@ -37,10 +37,33 @@ Opciones si se requiere más control (no cambian el enlace):
 2. **Código de acceso por estación** (PIN rotable, sin cuentas).
 3. **Cuentas personales** (Supabase Auth), si hay que saber _quién_ envió cada formulario.
 
+## 3.1 Modo demostración (pruebas sin servicios reales)
+
+Mientras no exista un proyecto de Supabase autorizado, `DEMO_MODE=true` (o `pnpm demo`) sustituye a
+Supabase por una simulación **en memoria** dentro de la propia aplicación:
+
+- `getSupabaseAdmin()` devuelve `createDemoSupabase()` (`src/lib/demo/`), que imita solo lo que usa la
+  app: firmar subidas, consultar/eliminar archivos y `create_submission` (idempotente por `id`).
+- Las fotos se suben a `/api/demo/storage/v1/...` en el **mismo origen** que la página. Es necesario
+  porque el navegador sube directo a la URL de Storage: un servicio simulado en otro puerto del
+  contenedor no sería alcanzable desde el navegador de quien revisa.
+- El servidor indica `demo: true` en la respuesta de `/api/uploads`; el navegador no necesita
+  variables propias. La ruta simulada aplica las mismas reglas que el bucket real (token de un solo
+  uso, sin sobrescritura, tipo y tamaño).
+- **Salvaguardas:** se ignora en producción (`VERCEL_ENV=production`), la ruta simulada responde 404
+  fuera del modo demostración, y una barra amarilla permanente avisa que no es el sistema real. Hay
+  pruebas que rompen cada salvaguarda a propósito y comprueban que se detecta.
+- **Límites:** los datos están en la memoria de un solo proceso y se pierden al reiniciar (en Vercel,
+  con varias instancias, no sería coherente: es solo para uso local o de revisión). No sustituye la
+  prueba de integración con Supabase real.
+- **Cómo quitarlo:** borrar `src/lib/demo/`, `src/app/api/demo/`, `src/components/layout/demo-banner.tsx`,
+  `scripts/demo.mjs`, y las 3 referencias en `getSupabaseAdmin()`, `/api/uploads` y el cliente de subida.
+
 ## 4. Limitaciones conocidas (honestas)
 
 - **No se ha probado contra un proyecto real de Supabase.** Las migraciones se validaron en
-  PostgreSQL real en memoria (PGlite) y el flujo de navegador con Supabase simulado. Falta una
+  PostgreSQL real en memoria (PGlite) y el flujo de navegador con Supabase simulado (red interceptada
+  y modo demostración). Falta una
   **prueba de integración real** (crear proyecto, aplicar migraciones, subir una foto de verdad)
   antes de producción.
 - **No se ha probado con celulares reales** (cámara en iPhone/Android, HEIC). Las pruebas e2e usan

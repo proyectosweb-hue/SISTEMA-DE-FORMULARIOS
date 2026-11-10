@@ -8,6 +8,7 @@ import {
   readJsonBody,
   serverErrorResponse,
 } from "@/lib/http";
+import { isDemoMode } from "@/lib/demo/mode";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { EVIDENCE_BUCKET } from "@/lib/uploads/constants";
@@ -74,7 +75,10 @@ export async function POST(request: Request) {
         return { path: data.path, token: data.token };
       }),
     );
-    return jsonResponse({ uploads } satisfies UploadResponse);
+    return jsonResponse({
+      uploads,
+      ...(isDemoMode() ? { demo: true } : {}),
+    } satisfies UploadResponse);
   } catch (error) {
     return serverErrorResponse("api/uploads", error);
   }

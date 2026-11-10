@@ -33,6 +33,8 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
     env: {
       ENABLE_TECHNICAL_FORM: "true",
+      // Simulación en memoria: permite probar el flujo real completo sin interceptar la red.
+      DEMO_MODE: "true",
       NEXT_PUBLIC_SUPABASE_URL: "https://proyecto-de-prueba.supabase.co",
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "clave-publicable-de-prueba",
     },

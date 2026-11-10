@@ -34,11 +34,30 @@ pnpm dev                     # http://localhost:3000
 
 Para ver el formulario técnico de prueba en local, agrega `ENABLE_TECHNICAL_FORM=true` a `.env.local`.
 
+## Probar la interfaz completa sin Supabase (modo demostración)
+
+No hace falta ninguna cuenta, credencial ni servicio externo:
+
+```bash
+pnpm demo                    # http://localhost:3000
+```
+
+Esto inicia el servidor de desarrollo con `DEMO_MODE=true` y el formulario técnico de prueba. Supabase
+se sustituye por una **simulación en memoria**: se puede elegir estación, tomar o elegir fotos,
+enviar y ver la confirmación con su código de referencia. Una barra amarilla "MODO DEMOSTRACIÓN"
+recuerda en todo momento que no es el sistema real.
+
+- Los datos viven en la memoria del servidor y **se pierden al detenerlo**.
+- **Nunca se activa en producción**: se ignora si `VERCEL_ENV=production`.
+- Si compilas con `pnpm build`, define `DEMO_MODE=true` al compilar **y** al iniciar.
+- Es solo para pruebas locales o de revisión; no sustituye la prueba de integración real con Supabase.
+
 ## Scripts
 
 | Comando          | Qué hace                                                     |
 | ---------------- | ------------------------------------------------------------ |
 | `pnpm dev`       | Servidor de desarrollo                                       |
+| `pnpm demo`      | Servidor de desarrollo en modo demostración (sin Supabase)   |
 | `pnpm build`     | Compilación de producción                                    |
 | `pnpm lint`      | ESLint                                                       |
 | `pnpm typecheck` | TypeScript (genera antes los tipos de rutas)                 |

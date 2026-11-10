@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
+import { DemoBanner } from "@/components/layout/demo-banner";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SITE } from "@/config/site";
@@ -29,6 +30,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         >
           Saltar al contenido
         </a>
+        <DemoBanner />
         <SiteHeader />
         <div className="flex-1">{children}</div>
         <SiteFooter />

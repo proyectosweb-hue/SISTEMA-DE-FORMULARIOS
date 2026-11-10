@@ -25,6 +25,16 @@ function getStorage(): StorageClient {
   return new StorageClient(`${url}/storage/v1`, headers);
 }
 
+/**
+ * Storage SIMULADO del modo demostración: vive en el mismo origen que la página
+ * (/api/demo/...), así que funciona también cuando el navegador no alcanza otros puertos.
+ */
+function getDemoStorage(): StorageClient {
+  return new StorageClient(`${window.location.origin}/api/demo/storage/v1`, {
+    apikey: "demo",
+  });
+}
+
 export type PhotoUploadInput = {
   submissionId: string;
   formSlug: string;
@@ -50,7 +60,7 @@ export async function uploadPhotos(input: PhotoUploadInput): Promise<string[]> {
     })),
   };
 
-  const { uploads } = await postJson<UploadResponse>("/api/uploads", request);
+  const { uploads, demo } = await postJson<UploadResponse>("/api/uploads", request);
   if (uploads.length !== input.blobs.length) {
     throw new ApiRequestError(
       "Respuesta inesperada del servidor.",
@@ -59,7 +69,8 @@ export async function uploadPhotos(input: PhotoUploadInput): Promise<string[]> {
     );
   }
 
-  const bucket = getStorage().from(EVIDENCE_BUCKET);
+  // El servidor decide el destino: en modo demostración indica `demo: true`.
+  const bucket = (demo ? getDemoStorage() : getStorage()).from(EVIDENCE_BUCKET);
   const paths: string[] = [];
   for (const [index, blob] of input.blobs.entries()) {
     const upload = uploads[index]!;

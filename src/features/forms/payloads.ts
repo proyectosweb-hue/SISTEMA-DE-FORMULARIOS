@@ -53,6 +53,8 @@ export type SubmissionRequest = z.infer<typeof submissionRequestSchema>;
 /** Respuesta de POST /api/uploads. */
 export type UploadResponse = {
   uploads: { path: string; token: string }[];
+  /** Solo en modo demostración: indica al navegador que suba al almacenamiento simulado. */
+  demo?: boolean;
 };
 
 /** Respuesta de POST /api/submissions. */
